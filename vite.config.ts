@@ -4,4 +4,6 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Göreli yol: site kök dizinde (Vercel) ya da /isg-dashboard/ alt yolunda (GitHub Pages) çalışır.
+  base: './',
 })

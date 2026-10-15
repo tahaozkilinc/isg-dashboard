@@ -1,0 +1,53 @@
+name: GitHub Pages yayını
+
+on:
+  push:
+    branches: [main, claude/osg-incident-dashboard-07n8jq]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  yayinla:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Supabase ayarlarını kontrol et
+        env:
+          ANON: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$ANON" ]; then
+            echo "::error::VITE_SUPABASE_ANON_KEY tanımlı değil. Settings → Secrets and variables → Actions → Variables bölümünden ekleyin."
+            exit 1
+          fi
+
+      - run: npm run lint
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://zkmjinpcoatwicgqixjs.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
