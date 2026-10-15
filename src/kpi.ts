@@ -1,5 +1,6 @@
 import type { IsgVeri, Kaza, KazaTuru } from './types';
 import { KAZA_TURLERI, AYLAR } from './types';
+import { tarihParcala } from './tarih';
 
 // Excel'deki formüllerin birebir karşılığı:
 //   Adam/Gün  = çalışan sayısı × yıllık çalışılan gün
@@ -13,16 +14,13 @@ export interface Donem {
 }
 
 export function donemdeki(kazalar: Kaza[], d: Donem): Kaza[] {
-  return kazalar.filter((k) => {
-    const t = new Date(k.tarih);
-    return t.getFullYear() === d.yil && (d.ay === null || t.getMonth() === d.ay);
-  });
+  return donemdekiKayitlar(kazalar, d);
 }
 
 export function donemdekiKayitlar<T extends { tarih: string }>(kayitlar: T[], d: Donem): T[] {
   return kayitlar.filter((k) => {
-    const t = new Date(k.tarih);
-    return t.getFullYear() === d.yil && (d.ay === null || t.getMonth() === d.ay);
+    const t = tarihParcala(k.tarih);
+    return t.yil === d.yil && (d.ay === null || t.ay === d.ay);
   });
 }
 
@@ -83,8 +81,8 @@ export function aylikDagilim(kazalar: Kaza[], yil: number) {
   return AYLAR.map((ay, i) => ({
     ay,
     sayi: kazalar.filter((k) => {
-      const t = new Date(k.tarih);
-      return t.getFullYear() === yil && t.getMonth() === i;
+      const t = tarihParcala(k.tarih);
+      return t.yil === yil && t.ay === i;
     }).length,
   }));
 }

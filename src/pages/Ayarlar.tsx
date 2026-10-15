@@ -1,37 +1,46 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useIsgVeri, eylemler } from '../store';
-import { ornekVeri } from '../seed';
+import { useDurum, eylemler, hataMetni } from '../store';
 
 export function Ayarlar() {
-  const veri = useIsgVeri();
+  const { veri } = useDurum();
   const [form, setForm] = useState({ ...veri.ayarlar });
   const [kaydedildi, setKaydedildi] = useState(false);
+  const [hata, setHata] = useState('');
+  const [bekliyor, setBekliyor] = useState(false);
 
-  const gonder = (e: FormEvent) => {
+  const gonder = async (e: FormEvent) => {
     e.preventDefault();
-    eylemler.ayarlarGuncelle({
-      firmaAdi: form.firmaAdi.trim() || 'FİRMA ADI',
-      calisanSayisi: Number(form.calisanSayisi) || 0,
-      yillikCalisanGun: Number(form.yillikCalisanGun) || 0,
-      gunlukSaat: Number(form.gunlukSaat) || 7.5,
-    });
-    setKaydedildi(true);
-    setTimeout(() => setKaydedildi(false), 2500);
+    setHata('');
+    setBekliyor(true);
+    try {
+      await eylemler.ayarlarGuncelle({
+        firmaAdi: form.firmaAdi.trim() || 'FİRMA ADI',
+        calisanSayisi: Math.max(0, Math.round(Number(form.calisanSayisi) || 0)),
+        yillikCalisanGun: Math.min(366, Math.max(0, Math.round(Number(form.yillikCalisanGun) || 0))),
+        gunlukSaat: Math.min(24, Math.max(0.5, Number(form.gunlukSaat) || 7.5)),
+      });
+      setKaydedildi(true);
+      setTimeout(() => setKaydedildi(false), 2500);
+    } catch (err) {
+      setHata(hataMetni(err));
+    } finally {
+      setBekliyor(false);
+    }
   };
 
   const adamGun = (Number(form.calisanSayisi) || 0) * (Number(form.yillikCalisanGun) || 0);
   const adamSaat = adamGun * (Number(form.gunlukSaat) || 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 720 }}>
+    <div style={{ maxWidth: 720 }}>
       <div className="kart">
         <h3>Firma ve KPI Parametreleri</h3>
         <form onSubmit={gonder}>
           <div className="form-grid">
             <div className="alan genis">
               <label htmlFor="a-firma">Firma Adı</label>
-              <input id="a-firma" type="text" value={form.firmaAdi}
+              <input id="a-firma" type="text" maxLength={120} value={form.firmaAdi}
                 onChange={(e) => setForm({ ...form, firmaAdi: e.target.value })} />
             </div>
             <div className="alan">
@@ -41,12 +50,12 @@ export function Ayarlar() {
             </div>
             <div className="alan">
               <label htmlFor="a-gun">Yıllık Çalışılan Gün</label>
-              <input id="a-gun" type="number" min={0} value={form.yillikCalisanGun}
+              <input id="a-gun" type="number" min={0} max={366} value={form.yillikCalisanGun}
                 onChange={(e) => setForm({ ...form, yillikCalisanGun: Number(e.target.value) })} />
             </div>
             <div className="alan">
               <label htmlFor="a-saat">Günlük Çalışma Saati</label>
-              <input id="a-saat" type="number" min={0} step={0.5} value={form.gunlukSaat}
+              <input id="a-saat" type="number" min={0.5} max={24} step={0.5} value={form.gunlukSaat}
                 onChange={(e) => setForm({ ...form, gunlukSaat: Number(e.target.value) })} />
             </div>
           </div>
@@ -54,37 +63,12 @@ export function Ayarlar() {
             Adam/Gün = {adamGun.toLocaleString('tr-TR')} · Adam/Saat = {adamSaat.toLocaleString('tr-TR')} —
             Kaza sıklık ve ağırlık hızı bu değerlerle hesaplanır.
           </p>
+          {hata && <div className="uyari hata" role="alert">{hata}</div>}
           <div style={{ marginTop: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
-            <button type="submit" className="btn">Ayarları Kaydet</button>
+            <button type="submit" className="btn" disabled={bekliyor}>{bekliyor ? 'Kaydediliyor…' : 'Ayarları Kaydet'}</button>
             {kaydedildi && <span style={{ color: 'var(--good)', fontWeight: 600 }}>✓ Kaydedildi</span>}
           </div>
         </form>
-      </div>
-
-      <div className="kart">
-        <h3>Veri Yönetimi</h3>
-        <p style={{ color: 'var(--ink-2)', marginTop: 0 }}>
-          Veriler bu tarayıcının yerel deposunda saklanır. Örnek verileri yükleyerek dashboard'u
-          inceleyebilir veya tüm verileri silerek sıfırdan başlayabilirsiniz.
-        </p>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button
-            className="btn ikincil"
-            onClick={() => {
-              if (veri.kazalar.length === 0 || confirm('Mevcut kayıtların yerine örnek veriler yüklensin mi?')) {
-                eylemler.tumVeriyiYukle(ornekVeri());
-              }
-            }}
-          >
-            Örnek Verileri Yükle
-          </button>
-          <button
-            className="btn tehlike"
-            onClick={() => { if (confirm('TÜM veriler silinecek. Emin misiniz?')) eylemler.tumVeriyiSil(); }}
-          >
-            Tüm Verileri Sil
-          </button>
-        </div>
       </div>
     </div>
   );

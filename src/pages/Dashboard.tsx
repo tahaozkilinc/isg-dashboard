@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { useIsgVeri, eylemler } from '../store';
+import { useDurum } from '../store';
+import { tarihParcala } from '../tarih';
 import { ozet, sayim, kazaTurDagilimi, aylikDagilim, donemdeki } from '../kpi';
 import type { Donem } from '../kpi';
 import { AYLAR, YARALANMA_BOLGELERI } from '../types';
 import type { YaralanmaBolgesi } from '../types';
 import { HalkaGrafik, YatayBar, AylikBar } from '../components/grafikler';
 import { VucutHaritasi } from '../components/VucutHaritasi';
-import { ornekVeri } from '../seed';
 
 const SAYI_BICIMI = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 });
 
@@ -20,18 +20,18 @@ function Kpi({ deger, etiket, renk }: { deger: string | number; etiket: string; 
 }
 
 export function Dashboard() {
-  const veri = useIsgVeri();
+  const { veri } = useDurum();
   const simdi = new Date();
   const [yil, setYil] = useState(simdi.getFullYear());
   const [ay, setAy] = useState<number | null>(null); // null = tüm yıl
 
-  const donem: Donem = { yil, ay };
-  const o = useMemo(() => ozet(veri, donem), [veri, yil, ay]);
+  const o = useMemo(() => ozet(veri, { yil, ay } satisfies Donem), [veri, yil, ay]);
 
   const yillar = useMemo(() => {
-    const s = new Set<number>([simdi.getFullYear()]);
-    veri.kazalar.forEach((k) => s.add(new Date(k.tarih).getFullYear()));
-    veri.uygunsuzluklar.forEach((u) => s.add(new Date(u.tarih).getFullYear()));
+    const s = new Set<number>([new Date().getFullYear()]);
+    veri.kazalar.forEach((k) => s.add(tarihParcala(k.tarih).yil));
+    veri.uygunsuzluklar.forEach((u) => s.add(tarihParcala(u.tarih).yil));
+    veri.egitimler.forEach((e) => s.add(tarihParcala(e.tarih).yil));
     return [...s].sort((a, b) => b - a);
   }, [veri]);
 
@@ -77,10 +77,7 @@ export function Dashboard() {
 
       {hicVeriYok ? (
         <div className="kart bos-durum">
-          <p>Henüz kayıt yok. "Kaza Bildirimi" sekmesinden veri girebilir veya örnek verilerle dashboard'u inceleyebilirsiniz.</p>
-          <button className="btn" onClick={() => eylemler.tumVeriyiYukle(ornekVeri())}>
-            Örnek Verileri Yükle
-          </button>
+          <p>Henüz kayıt yok. Kaza, uygunsuzluk ve eğitim kayıtları girildikçe dashboard otomatik dolacak.</p>
         </div>
       ) : (
         <>

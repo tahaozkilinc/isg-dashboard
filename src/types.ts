@@ -135,3 +135,20 @@ export const AYLAR = [
   'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
   'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
 ] as const;
+
+export type Rol = 'admin' | 'uzman' | 'izleyici' | 'beklemede' | 'pasif';
+
+export const ROLLER: { rol: Rol; ad: string; aciklama: string }[] = [
+  { rol: 'admin', ad: 'Yönetici', aciklama: 'Tüm kayıtları görür, ekler, siler; kullanıcıları ve ayarları yönetir' },
+  { rol: 'uzman', ad: 'İSG Uzmanı', aciklama: 'Kayıt ekler ve düzenler, silemez' },
+  { rol: 'izleyici', ad: 'İzleyici', aciklama: 'Yalnızca dashboard ve kayıtları görüntüler' },
+  { rol: 'beklemede', ad: 'Onay Bekliyor', aciklama: 'Henüz erişimi yok' },
+  { rol: 'pasif', ad: 'Pasif', aciklama: 'Erişimi kapatılmış' },
+];
+
+export interface Profil {
+  id: string;
+  eposta: string;
+  adSoyad: string;
+  rol: Rol;
+}

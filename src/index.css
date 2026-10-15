@@ -76,12 +76,6 @@ body {
   z-index: 10;
 }
 .topbar .marka { display: flex; align-items: center; gap: 10px; }
-.topbar .logo {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: var(--accent); color: #fff;
-  display: grid; place-items: center;
-  font-weight: 700; font-size: 15px;
-}
 .topbar h1 { font-size: 16px; margin: 0; }
 .topbar .alt { font-size: 12px; color: var(--muted); }
 
@@ -233,3 +227,32 @@ table.veri td.sayi { font-variant-numeric: tabular-nums; text-align: right; }
   .topbar, .donem-secim, .btn { display: none !important; }
   .icerik { padding: 0; }
 }
+
+/* ---------- Giriş ve oturum ---------- */
+.giris-sayfa, .tam-sayfa {
+  min-height: 100vh; display: grid; place-items: center; padding: 24px;
+}
+.giris-kart { width: 100%; max-width: 400px; padding: 24px; }
+.giris-marka { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.giris-marka h1 { margin: 0; font-size: 17px; }
+.giris-marka .alt, .alt { font-size: 12px; color: var(--muted); }
+.logo {
+  width: 38px; height: 38px; border-radius: 9px; flex: none;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: 15px;
+}
+.giris-sekmeler { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--grid); }
+.giris-sekmeler button {
+  flex: 1; background: none; border: none; border-bottom: 2px solid transparent;
+  padding: 8px 0; font-size: 13.5px; font-weight: 600; color: var(--muted);
+  cursor: pointer; font-family: inherit; margin-bottom: -1px;
+}
+.giris-sekmeler button.aktif { color: var(--ink); border-bottom-color: var(--accent); }
+.giris-form { display: flex; flex-direction: column; gap: 12px; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
+.uyari { padding: 10px 12px; border-radius: 8px; font-size: 13px; border: 1px solid; }
+.uyari.hata { color: var(--critical); border-color: var(--critical); }
+.uyari.bilgi { color: var(--ink-2); border-color: var(--baseline); background: var(--page); }
+.kullanici-kutu { display: flex; align-items: center; gap: 10px; }
+.kullanici-ad { font-size: 13px; font-weight: 600; text-align: right; }
+.kullanici-kutu .alt { text-align: right; }
