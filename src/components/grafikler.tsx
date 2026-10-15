@@ -125,7 +125,7 @@ export function AylikBar({ veri }: { veri: { ay: string; sayi: number }[] }) {
         <BarChart data={veri} margin={{ left: -14, right: 8, top: 18, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke={palet.grid} />
           <XAxis
-            dataKey="ay" tickLine={false} axisLine={{ stroke: palet.baseline }}
+            dataKey="ay" interval={0} tickLine={false} axisLine={{ stroke: palet.baseline }}
             tick={{ fill: palet.muted, fontSize: 11 }}
             tickFormatter={(a: string) => a.slice(0, 3)}
           />

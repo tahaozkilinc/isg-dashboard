@@ -256,3 +256,82 @@ table.veri td.sayi { font-variant-numeric: tabular-nums; text-align: right; }
 .kullanici-kutu { display: flex; align-items: center; gap: 10px; }
 .kullanici-ad { font-size: 13px; font-weight: 600; text-align: right; }
 .kullanici-kutu .alt { text-align: right; }
+
+/* ---------- Rapor düzeni (Excel KPI raporu) ---------- */
+.rapor { display: flex; flex-direction: column; gap: 14px; }
+
+.rapor-baslik {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  border-top: 4px solid var(--accent); padding: 14px 18px;
+}
+.rapor-firma { display: flex; align-items: center; gap: 12px; }
+.logo-buyuk { width: 46px; height: 46px; font-size: 17px; }
+.rapor-firma-ad { font-size: 16px; font-weight: 700; }
+.rapor-orta { text-align: center; }
+.rapor-ust { font-size: 12px; letter-spacing: 1.4px; color: var(--ink-2); font-weight: 600; }
+.rapor-donem { font-size: 26px; font-weight: 800; letter-spacing: 0.5px; line-height: 1.2; }
+.rapor-sag { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.rapor-tarih { font-size: 13px; font-weight: 600; }
+.rapor-tarih .alt { font-weight: 400; margin-right: 4px; }
+.rapor-sag .donem-secim { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+.grup {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+}
+.grup-baslik {
+  margin: 0; padding: 9px 16px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: #fff; background: var(--accent);
+}
+.grup-icerik { padding: 14px 16px 16px; }
+.alt-baslik {
+  margin: 14px 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
+  text-transform: uppercase; color: var(--ink-2); padding-bottom: 6px; border-bottom: 1px solid var(--grid);
+}
+.alt-baslik:first-child { margin-top: 0; }
+
+.ozet-ana { display: grid; grid-template-columns: 240px 1fr; gap: 18px; align-items: stretch; }
+.ozet-hero {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: var(--page); border: 1px solid var(--border); border-radius: 10px; padding: 16px;
+  text-align: center;
+}
+.ozet-hero-deger { font-size: 64px; font-weight: 800; line-height: 1; color: var(--accent); }
+.ozet-hero-etiket { font-size: 11.5px; letter-spacing: 0.6px; color: var(--ink-2); font-weight: 600; }
+.durum-rozet {
+  margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700;
+  padding: 3px 10px; border-radius: 99px; border: 1px solid currentColor;
+}
+.durum-rozet.iyi { color: var(--good); }
+.durum-rozet.kritik { color: var(--critical); }
+
+.ozet-gruplar { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 22px; }
+.ozet-grup-ad {
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.say-satir { display: flex; flex-wrap: wrap; gap: 8px; }
+.say {
+  flex: 1 1 88px; min-width: 88px; padding: 8px 10px; border-radius: 8px;
+  background: var(--page); border-left: 4px solid var(--say-renk, var(--accent));
+}
+.say-deger { font-size: 22px; font-weight: 700; line-height: 1.1; }
+.say-etiket { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+
+.rapor-kolonlar { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; align-items: start; }
+.kolon { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+@media (max-width: 900px) {
+  .rapor-baslik { grid-template-columns: 1fr; text-align: center; }
+  .rapor-firma, .rapor-sag, .rapor-sag .donem-secim { justify-content: center; align-items: center; }
+  .ozet-ana { grid-template-columns: 1fr; }
+}
+
+@media print {
+  .rapor-baslik, .grup { break-inside: avoid; }
+  .grup-baslik { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+.rapor-alt { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; align-items: start; }
+@media (max-width: 1100px) { .rapor-alt { grid-template-columns: 1fr; } }
+@media (min-width: 1100px) { .ozet-grup:first-child { grid-column: span 2; } }
