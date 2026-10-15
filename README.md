@@ -1,70 +1,72 @@
-# İSG Dashboard — Aylık KPI Raporu
+# İSG Dashboard — Aylık İSG Göstergeleri
 
-İş Sağlığı ve Güvenliği (İSG) evraklarını dijital ortama taşıyan web uygulaması.
-Excel'de manuel tutulan **"Aylık İSG KPI Raporu"** dosyasının birebir dijital karşılığıdır:
-iş kazası bildirimleri girilir, ana dashboard'da otomatik olarak raporlanır.
+Sunar Mısır'ın Excel'de manuel tuttuğu **"Temel İş Güvenliği İstatistikleri"** tablosunun dijital karşılığı.
+İSG uzmanı aylık göstergeleri girer; dashboard kazasız gün sayacı, ay ay kaza durumu, önceki yıl
+karşılaştırmaları ve grafiklerle otomatik güncellenir.
 
-## Özellikler
-
-- **Dashboard** — Yönetici özeti KPI kartları (kaza/olay sayısı, ölümlü kaza, gün kayıplı
-  kaza, kayıp iş günü, kaza sıklık/ağırlık hızı, uygunsuzluk ve eğitim istatistikleri),
-  kaza türleri halka grafiği, yaralanma bölgesi vücut haritası, kaza/olay çeşidi ve kök
-  sebep grafikleri, aylara göre kaza dağılımı. Yıl/ay dönem filtresi ve koyu tema desteği.
-- **Kaza Bildirimi** — İş kazası/olay giriş formu (tarih, kazazede, bölüm, kaza türü,
-  çeşidi, kök sebep, yaralanma bölgesi, kayıp iş günü, açıklama) ve kayıt listesi.
-- **Uygunsuzluklar** — Açık/kapalı durum takibi ile uygunsuzluk kayıtları.
-- **Eğitimler** — İSG eğitim konuları ve katılımcı sayıları.
-- **Kullanıcılar** (yönetici) — Kayıt olanlara rol verme, erişimi kapatma.
-- **Ayarlar** (yönetici) — Firma adı ve KPI parametreleri (çalışan sayısı, yıllık çalışılan gün,
-  günlük çalışma saati).
-
-## KPI Formülleri (Excel ile aynı)
-
-- Adam/Gün = çalışan sayısı × yıllık çalışılan gün
-- Adam/Saat = Adam/Gün × günlük çalışma saati
-- Kaza Sıklık Hızı = kaza sayısı × 1.000.000 / Adam-Saat
-- Kaza Ağırlık Hızı = kayıp iş günü × 1.000 / Adam-Gün
-
-## Kullanıcılar ve Roller
-
-Giriş Supabase Auth (e-posta + şifre) ile yapılır. Roller veritabanında satır güvenliği (RLS)
-ile korunur; arayüzdeki gizleme yalnızca kolaylıktır, asıl kontrol sunucudadır.
+## Kimler ne yapar
 
 | Rol | Yetki |
 |---|---|
-| Yönetici | Her şeyi görür, ekler, siler; kullanıcı rollerini ve ayarları yönetir |
-| İSG Uzmanı | Kaza/uygunsuzluk/eğitim kaydı ekler ve günceller, silemez |
-| İzleyici | Yalnızca görüntüler |
-| Onay Bekliyor | Kayıt olmuş, yönetici onayı bekliyor, veri göremez |
-| Pasif | Erişimi kapatılmış |
+| **Yönetici** | Yalnızca **tanımlama** yapar: kullanıcıları ve firma adını yönetir. Veri girmez. |
+| **İSG Uzmanı** | Aylık göstergeleri girer ve düzeltir. |
+| **İzleyici** | Yalnızca dashboard'u görür. |
+| **Pasif** | Erişimi kapalı. |
 
-**İlk kayıt olan kişi otomatik Yönetici olur**; sonraki kayıtlar yönetici onayı bekler.
-Bu yüzden canlıya almadan önce ilk hesabı kendiniz açın.
+**Kayıt ol yoktur.** Hesapları Supabase panelinden yönetici açar, rolleri uygulamadaki **Tanımlar**
+sayfasından verir. Yetkiler arayüzde değil veritabanında (satır güvenliği / RLS) uygulanır.
 
-## Kurulum (Supabase)
+## Sayfalar
 
-1. Supabase panelinde **SQL Editor**'ü açıp `supabase/migrations/20260115000000_isg_semasi.sql`
-   dosyasının tamamını çalıştırın (tablolar, roller ve RLS kuralları kurulur).
-2. **Authentication → Providers → Email** açık olmalı. Hızlı denemede "Confirm email" seçeneğini
-   kapatabilirsiniz; açık kalırsa kullanıcılar önce e-postadaki bağlantıyı onaylar.
-3. `.env.example` dosyasını `.env` olarak kopyalayın ve **Project Settings → API** sayfasındaki
-   Project URL ile `anon` (publishable) anahtarını yazın:
-   ```
-   VITE_SUPABASE_URL=https://<proje-id>.supabase.co
-   VITE_SUPABASE_ANON_KEY=<anon-anahtar>
-   ```
-   `service_role` anahtarını **asla** buraya yazmayın.
-4. Canlıya alırken (Vercel/Netlify/Cloudflare Pages) aynı iki değişkeni sitenin ortam
-   değişkenlerine ekleyin; derleme komutu `npm run build`, çıktı klasörü `dist`.
-   Supabase **Authentication → URL Configuration → Site URL** alanına sitenizin adresini girin.
+- **Dashboard** — kazasız gün sayacı, ay ay kaza şeridi, 6 ana gösterge kartı (önceki yılla karşılaştırmalı),
+  iş kazası/kayıp gün/risk bildirimi/denetim/eğitim grafikleri, yıllara göre karşılaştırma ve Excel'deki
+  tablonun aynısı. Yazdır / PDF düğmesi vardır.
+- **Aylık Veri Girişi** (uzman) — Excel gibi tablo: hücreye yaz, **Kaydet**. Tutarsız girişler için uyarı verir
+  (örn. erkek + kadın ≠ toplam kaza).
+- **Tanımlar** (yönetici) — firma adı, kullanıcı tanımları ve roller.
 
-## Geliştirme
+## Kurulum
+
+### 1) Veritabanı
+Supabase panelinde **SQL Editor**'ü açıp `supabase/migrations/20260115000000_isg_semasi.sql` dosyasının
+tamamını bir kez çalıştırın. Tablolar, yetkiler ve Excel'deki 2024–2026 verileri yüklenir. Tekrar
+çalıştırmak güvenlidir; girdiğiniz verilerin üzerine yazmaz.
+
+### 2) Kendi kendine kaydı kapatın
+**Authentication → Sign In / Providers** bölümünde **"Allow new users to sign up"** seçeneğini
+**kapatın**. Böylece hesabı yalnızca siz açabilirsiniz.
+
+### 3) Hesapları açın
+**Authentication → Users → Add user → Create new user**: e-posta ve şifre girin, **Auto Confirm User**
+işaretli olsun.
+
+- **İlk giriş yapan kişi otomatik Yönetici olur.** Önce kendi hesabınızı açıp bir kez giriş yapın.
+- Diğer kişileri açtıktan sonra uygulamada **Tanımlar → Yeni kullanıcı tanımla** ile aynı e-postayı
+  ve rolü girin. Tanımlanmamış bir hesap sisteme giremez.
+- Yönetici veri giremediği için, veri girecek kişiyi **İSG Uzmanı** olarak tanımlayın.
+
+### 4) Yayın (GitHub Pages)
+1. Depo **Settings → Pages → Source: GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → Variables**: `VITE_SUPABASE_ANON_KEY` ekleyin
+   (Supabase → Project Settings → API'deki `anon`/publishable anahtar). `VITE_SUPABASE_URL` isteğe bağlıdır;
+   verilmezse `.github/workflows/pages.yml` içindeki adres kullanılır.
+3. Actions sekmesinde **GitHub Pages yayını**'nı çalıştırın. Sonraki her push otomatik yayınlanır.
+
+`service_role` anahtarını **asla** koda, ortam değişkenine ya da bu depoya yazmayın.
+
+## Yerel geliştirme
 
 ```bash
+cp .env.example .env   # URL ve anon anahtarı yazın
 npm install
-npm run dev      # geliştirme sunucusu
-npm run build    # üretim derlemesi (dist/)
-npm run preview  # derlenmiş hali önizle
+npm run dev
+npm run build
 ```
 
 Teknolojiler: Vite · React · TypeScript · Recharts · Supabase (Postgres + Auth)
+
+## Veri modeli
+
+Tek tablo, esnek yapı: `isg_aylik_veri (yil, ay, kod, deger)`. `ay = 1..12` aylık değerdir, `ay = 0` aylık
+dökümü olmayan geçmiş yılın toplamıdır (Excel'deki 2025 ve 2024 sütunları). Göstergelerin listesi ve
+toplama kuralı (toplam / ortalama / son ay) `src/gostergeler.ts` içindedir.

@@ -1,18 +1,14 @@
-import { useState } from 'react';
-import { Component } from 'react';
+import { useState, Component } from 'react';
 import type { ReactNode } from 'react';
 import { useDurum, useYetki, cikisYap, oturumuBaslat } from './store';
 import { supabaseAyarliMi } from './supabase';
 import { ROLLER } from './types';
 import { Giris } from './pages/Giris';
 import { Dashboard } from './pages/Dashboard';
-import { KazaBildirimi } from './pages/KazaBildirimi';
-import { Uygunsuzluklar } from './pages/Uygunsuzluklar';
-import { Egitimler } from './pages/Egitimler';
-import { Ayarlar } from './pages/Ayarlar';
-import { Kullanicilar } from './pages/Kullanicilar';
+import { VeriGirisi } from './pages/VeriGirisi';
+import { Tanimlar } from './pages/Tanimlar';
 
-type SayfaId = 'dashboard' | 'kaza' | 'uygunsuzluk' | 'egitim' | 'ayarlar' | 'kullanicilar';
+type SayfaId = 'dashboard' | 'veri' | 'tanimlar';
 
 class HataSiniri extends Component<{ children: ReactNode }, { hata: boolean }> {
   state = { hata: false };
@@ -49,7 +45,7 @@ oturumuBaslat();
 
 function Uygulama() {
   const d = useDurum();
-  const { yazabilir, admin } = useYetki();
+  const { veriGirebilir, tanimlayabilir } = useYetki();
   const [sayfa, setSayfa] = useState<SayfaId>('dashboard');
 
   if (!supabaseAyarliMi) {
@@ -61,40 +57,27 @@ function Uygulama() {
     );
   }
   if (!d.hazir) return <Mesaj baslik="Yükleniyor…" metin="Oturum kontrol ediliyor." />;
-  if (!d.kullanici) return <Giris />;
-  if (d.hata && !d.profil) return <Mesaj baslik="Bağlantı hatası" metin={d.hata} cikis />;
-
-  const rol = d.profil?.rol;
-  if (rol === 'beklemede') {
-    return <Mesaj baslik="Onay bekleniyor" metin="Hesabınız oluşturuldu. Bir yönetici erişiminizi onayladığında sisteme girebilirsiniz." cikis />;
+  if (!d.oturum) return <Giris />;
+  if (d.hata && !d.rol) return <Mesaj baslik="Bağlantı hatası" metin={d.hata} cikis />;
+  if (d.rol === 'tanimsiz') {
+    return <Mesaj baslik="Hesabınız tanımlı değil" metin={`${d.oturum.eposta} adresi sistemde tanımlı değil. Erişim için sistem yöneticinizden sizi Tanımlar sayfasından eklemesini isteyin.`} cikis />;
   }
-  if (rol === 'pasif') {
+  if (d.rol === 'pasif') {
     return <Mesaj baslik="Erişim kapalı" metin="Hesabınızın erişimi kapatılmış. Gerekirse sistem yöneticisiyle görüşün." cikis />;
   }
   if (!d.veriYuklendi) {
     return <Mesaj baslik="Veriler yükleniyor…" metin={d.hata ?? 'Lütfen bekleyin.'} cikis={Boolean(d.hata)} />;
   }
 
-  const ayarlar = d.veri.ayarlar;
-  const basHarfler = ayarlar.firmaAdi.split(/\s+/).map((k) => k[0]).join('').slice(0, 2).toLocaleUpperCase('tr');
-  const bekleyen = d.profiller.filter((p) => p.rol === 'beklemede').length;
+  const firma = d.ayarlar.firmaAdi;
+  const basHarfler = firma.split(/\s+/).map((k) => k[0]).join('').slice(0, 2).toLocaleUpperCase('tr');
 
   const sekmeler: { id: SayfaId; ad: string }[] = [
     { id: 'dashboard', ad: 'Dashboard' },
-    ...(yazabilir ? [
-      { id: 'kaza' as const, ad: 'Kaza Bildirimi' },
-      { id: 'uygunsuzluk' as const, ad: 'Uygunsuzluklar' },
-      { id: 'egitim' as const, ad: 'Eğitimler' },
-    ] : [
-      { id: 'kaza' as const, ad: 'Kazalar' },
-      { id: 'uygunsuzluk' as const, ad: 'Uygunsuzluklar' },
-      { id: 'egitim' as const, ad: 'Eğitimler' },
-    ]),
-    ...(admin ? [
-      { id: 'kullanicilar' as const, ad: bekleyen > 0 ? `Kullanıcılar (${bekleyen})` : 'Kullanıcılar' },
-      { id: 'ayarlar' as const, ad: 'Ayarlar' },
-    ] : []),
+    ...(veriGirebilir ? [{ id: 'veri' as const, ad: 'Aylık Veri Girişi' }] : []),
+    ...(tanimlayabilir ? [{ id: 'tanimlar' as const, ad: 'Tanımlar' }] : []),
   ];
+  const aktif = sekmeler.some((s) => s.id === sayfa) ? sayfa : 'dashboard';
 
   return (
     <div className="app">
@@ -102,32 +85,29 @@ function Uygulama() {
         <div className="marka">
           <div className="logo" aria-hidden>{basHarfler || 'İG'}</div>
           <div>
-            <h1>{ayarlar.firmaAdi}</h1>
-            <div className="alt">İSG Yönetim Sistemi — Aylık KPI Raporu</div>
+            <h1>{firma}</h1>
+            <div className="alt">İSG Yönetim Sistemi</div>
           </div>
         </div>
         <nav className="sekmeler" aria-label="Sayfalar">
           {sekmeler.map((s) => (
-            <button key={s.id} className={`sekme ${sayfa === s.id ? 'aktif' : ''}`} onClick={() => setSayfa(s.id)}>
+            <button key={s.id} className={`sekme ${aktif === s.id ? 'aktif' : ''}`} onClick={() => setSayfa(s.id)}>
               {s.ad}
             </button>
           ))}
         </nav>
         <div className="kullanici-kutu">
           <div>
-            <div className="kullanici-ad">{d.profil?.adSoyad || d.kullanici.eposta}</div>
-            <div className="alt">{ROLLER.find((r) => r.rol === rol)?.ad}</div>
+            <div className="kullanici-ad">{d.adSoyad || d.oturum.eposta}</div>
+            <div className="alt">{ROLLER.find((r) => r.rol === d.rol)?.ad}</div>
           </div>
           <button className="btn ikincil mini" onClick={() => void cikisYap()}>Çıkış</button>
         </div>
       </header>
       <main className="icerik">
-        {sayfa === 'dashboard' && <Dashboard />}
-        {sayfa === 'kaza' && <KazaBildirimi />}
-        {sayfa === 'uygunsuzluk' && <Uygunsuzluklar />}
-        {sayfa === 'egitim' && <Egitimler />}
-        {sayfa === 'kullanicilar' && admin && <Kullanicilar />}
-        {sayfa === 'ayarlar' && admin && <Ayarlar />}
+        {aktif === 'dashboard' && <Dashboard />}
+        {aktif === 'veri' && veriGirebilir && <VeriGirisi />}
+        {aktif === 'tanimlar' && tanimlayabilir && <Tanimlar />}
       </main>
     </div>
   );
