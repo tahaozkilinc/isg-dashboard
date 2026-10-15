@@ -49,8 +49,8 @@ export function useYetki() {
   const { rol } = useDurum();
   return {
     rol,
-    veriGirebilir: rol === 'uzman', // aylık verileri yalnızca İSG uzmanı girer
-    tanimlayabilir: rol === 'admin', // yönetici yalnızca tanımlama yapar
+    veriGirebilir: rol === 'uzman' || rol === 'admin_uzman', // veriyi İSG uzmanı girer
+    tanimlayabilir: rol === 'admin' || rol === 'admin_uzman', // yönetici tanımlama yapar
   };
 }
 
@@ -133,7 +133,7 @@ async function oturumuIsle(oturum: Session | null) {
     ayarla({ rol: satir.o_rol, adSoyad: satir.o_ad_soyad });
     if (satir.o_rol !== 'pasif') {
       await verileriYukle();
-      if (satir.o_rol === 'admin') await kullanicilariYukle();
+      if (satir.o_rol === 'admin' || satir.o_rol === 'admin_uzman') await kullanicilariYukle();
     }
   } catch (e) {
     ayarla({ hata: hataMetni(e) });
@@ -157,6 +157,15 @@ export async function girisYap(eposta: string, sifre: string) {
   kontrol(r);
 }
 
+/** Kullanıcı kendi şifresini değiştirir; mevcut şifre yeniden doğrulanır. */
+export async function sifreDegistir(mevcut: string, yeni: string) {
+  const eposta = durum.oturum?.eposta;
+  if (!eposta) throw new Error('Oturum bulunamadı.');
+  const dogrula = await supabase.auth.signInWithPassword({ email: eposta, password: mevcut });
+  if (dogrula.error) throw new Error('Mevcut şifre hatalı.');
+  kontrol(await supabase.auth.updateUser({ password: yeni }));
+}
+
 export async function cikisYap() {
   await supabase.auth.signOut();
 }
@@ -165,7 +174,34 @@ export async function cikisYap() {
 
 export interface Degisiklik { yil: number; ay: number; kod: string; deger: number | null }
 
+interface FonksiyonYaniti { tamam?: boolean; hata?: string }
+
+/** Şifreli hesap açma/yenileme için Supabase Edge Function çağrısı (gizli anahtar sunucuda kalır). */
+async function kullaniciIslevi(govde: Record<string, string>) {
+  const r = await supabase.functions.invoke<FonksiyonYaniti>('kullanici-yonet', { body: govde });
+  if (r.error) {
+    const yanit = (r.error as { context?: Response }).context;
+    if (yanit && typeof yanit.json === 'function') {
+      const icerik = await yanit.json().catch(() => null) as FonksiyonYaniti | null;
+      if (icerik?.hata) throw new Error(icerik.hata);
+      if (yanit.status === 404) throw new Error('Kullanıcı oluşturma işlevi kurulmamış. README\'deki "Kullanıcı işlevi" adımını uygulayın.');
+    }
+    throw new Error(hataMetni(r.error));
+  }
+  if (r.data?.hata) throw new Error(r.data.hata);
+}
+
 export const eylemler = {
+  /** Yönetici: ad + şifre ile yeni hesap açar ve rol tanımlar. */
+  async kullaniciOlustur(k: Kullanici & { sifre: string }) {
+    await kullaniciIslevi({ islem: 'olustur', eposta: k.eposta, adSoyad: k.adSoyad, rol: k.rol, sifre: k.sifre });
+    await kullanicilariYukle();
+  },
+  /** Yönetici: bir kullanıcının şifresini yeniler. */
+  async kullaniciSifreBelirle(eposta: string, sifre: string) {
+    await kullaniciIslevi({ islem: 'sifre', eposta, sifre });
+  },
+
   /** Uzman: değişen hücreleri kaydeder. deger = null → hücre silinir. */
   async veriKaydet(degisiklikler: Degisiklik[]) {
     const yazilacak = degisiklikler.filter((d) => d.deger !== null);

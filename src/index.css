@@ -3,8 +3,8 @@
 :root {
   color-scheme: light dark;
   /* Yüzeyler ve mürekkep (dataviz referans paleti) */
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
+  --page: #f3f5f2;
+  --surface: #ffffff;
   --ink: #0b0b0b;
   --ink-2: #52514e;
   --muted: #898781;
@@ -12,20 +12,27 @@
   --baseline: #c3c2b7;
   --border: rgba(11, 11, 11, 0.1);
   /* Kategorik seri renkleri */
-  --s1: #2a78d6;
-  --s2: #1baf7a;
-  --s3: #eda100;
-  --s4: #008300;
+  /* Sunar marka renkleri */
+  --marka: #387d3d;
+  --marka-koyu: #2b6230;
+  --marka-derin: #1f4a24;
+  --altin: #fcc136;
+  /* Kategorik seri renkleri (marka yeşili öncelikli; dataviz doğrulayıcısı ile denetlendi) */
+  --s1: #387d3d;
+  --s2: #eda100;
+  --s3: #2a78d6;
+  --s4: #e34948;
   --s5: #4a3aa7;
-  --s6: #e34948;
-  --s7: #e87ba4;
+  --s6: #e87ba4;
+  --s7: #1baf7a;
   --s8: #eb6834;
   /* Durum renkleri */
   --good: #0ca30c;
   --warning: #fab219;
   --serious: #ec835a;
   --critical: #d03b3b;
-  --accent: #2a78d6;
+  --accent: #387d3d;
+  --accent-ink: #2b6230;
   --good-text: #006300;
 }
 
@@ -39,15 +46,16 @@
     --grid: #2c2c2a;
     --baseline: #383835;
     --border: rgba(255, 255, 255, 0.1);
-    --s1: #3987e5;
-    --s2: #199e70;
-    --s3: #c98500;
-    --s4: #008300;
+    --s1: #58a65c;
+    --s2: #c98500;
+    --s3: #3987e5;
+    --s4: #e66767;
     --s5: #9085e9;
-    --s6: #e66767;
-    --s7: #d55181;
+    --s6: #d55181;
+    --s7: #199e70;
     --s8: #d95926;
-    --accent: #3987e5;
+    --accent: #387d3d;
+    --accent-ink: #8bd18f;
     --good-text: #0ca30c;
   }
 }
@@ -450,3 +458,126 @@ table.veri td.sayi { font-variant-numeric: tabular-nums; text-align: right; }
 .tablo-sar.dikey { max-height: 70vh; overflow: auto; }
 .tablo-sar.dikey thead th { position: sticky; top: 0; background: var(--surface); z-index: 2; }
 .tablo-sar.dikey thead th.ilk { z-index: 3; }
+
+/* ---------- Kaza girişi, profil ---------- */
+.kaza-girisi { display: grid; grid-template-columns: minmax(300px, 520px) 1fr; gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .kaza-girisi { grid-template-columns: 1fr; } }
+.etiket-metni { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.segment { display: inline-flex; border: 1px solid var(--baseline); border-radius: 8px; overflow: hidden; align-self: flex-start; }
+.segment button {
+  background: var(--page); color: var(--ink-2); border: none; padding: 8px 16px; font: inherit; font-size: 13.5px;
+  cursor: pointer; border-right: 1px solid var(--baseline);
+}
+.segment button:last-child { border-right: none; }
+.segment button.aktif { background: var(--accent); color: #fff; font-weight: 600; }
+.onay-kutusu { display: flex; align-items: center; gap: 8px; font-size: 13.5px; grid-column: 1 / -1; }
+.onay-kutusu input { width: 18px; height: 18px; accent-color: var(--accent); }
+.gecersiz-alan { border-color: var(--critical) !important; }
+.profil { display: flex; flex-direction: column; gap: 14px; max-width: 640px; }
+.profil-bilgi { display: grid; grid-template-columns: 110px 1fr; gap: 8px 12px; margin: 0; }
+.profil-bilgi dt { color: var(--muted); font-size: 12.5px; }
+.profil-bilgi dd { margin: 0; font-weight: 600; }
+.sifre-satir { display: flex; gap: 6px; }
+.sifre-satir input { flex: 1; min-width: 0; }
+.kullanici-profil {
+  background: none; border: 1px solid transparent; border-radius: 8px; padding: 4px 8px; cursor: pointer; font: inherit;
+  display: flex; flex-direction: column; align-items: flex-end; color: var(--ink);
+}
+.kullanici-profil:hover, .kullanici-profil.aktif { border-color: var(--baseline); background: var(--page); }
+.kullanici-profil .kullanici-ad { font-size: 13px; font-weight: 600; }
+
+/* =====================================================================
+   Sunar kurumsal tema — marka yeşili #387d3d, altın sarısı #fcc136
+   ===================================================================== */
+.logo-plaka {
+  display: inline-flex; align-items: center; background: #fff; border-radius: 10px;
+  padding: 6px 12px; border: 1px solid rgba(0, 0, 0, 0.08); flex: none;
+}
+.logo-plaka.buyuk { padding: 8px 16px; border-radius: 12px; }
+.sunar-logo { display: block; width: auto; }
+
+.topbar { padding: 14px 24px 10px; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03); }
+.topbar::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px;
+  background: linear-gradient(90deg, var(--marka-derin), var(--marka) 72%, var(--altin));
+}
+.topbar .marka { gap: 14px; }
+.marka-metin { padding-left: 14px; border-left: 1px solid var(--baseline); }
+.marka-metin h1 { font-size: 15px; letter-spacing: 0.2px; }
+.sekme:focus-visible, .btn:focus-visible, .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Bölüm başlıkları */
+.grup-baslik {
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  color: var(--accent-ink); border-bottom: 1px solid var(--border); border-left: 4px solid var(--altin);
+  padding: 10px 16px; letter-spacing: 0.7px;
+}
+
+/* Rapor başlık bandı */
+.rapor-baslik {
+  background: linear-gradient(115deg, var(--marka-derin) 0%, var(--marka-koyu) 55%, var(--marka) 100%);
+  border: none; border-radius: 14px; color: #fff; padding: 18px 22px; position: relative; overflow: hidden;
+}
+.rapor-baslik::after {
+  content: ''; position: absolute; right: -40px; top: -60px; width: 260px; height: 260px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(252, 193, 54, 0.38), transparent);
+}
+.rapor-baslik > * { position: relative; z-index: 1; }
+.rapor-firma-ad { color: #fff; }
+.rapor-baslik .alt { color: rgba(255, 255, 255, 0.78); }
+.rapor-ust { color: rgba(255, 255, 255, 0.85); }
+.rapor-donem { color: var(--altin); }
+.rapor-baslik select.kucuk { background: #fff; color: #111; border-color: transparent; }
+.rapor-baslik .btn.ikincil { color: #fff; border-color: rgba(255, 255, 255, 0.55); }
+.rapor-baslik .btn.ikincil:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+
+/* Giriş sayfası: sol marka paneli + sağ form */
+.giris-sayfa { min-height: 100vh; display: grid; grid-template-columns: minmax(360px, 44%) 1fr; place-items: stretch; padding: 0; }
+.giris-marka-panel {
+  position: relative; overflow: hidden; color: #fff; padding: 36px 48px; display: flex; flex-direction: column;
+  justify-content: space-between; gap: 32px;
+  background: linear-gradient(160deg, var(--marka-derin) 0%, var(--marka-koyu) 50%, var(--marka) 100%);
+}
+.giris-marka-panel > * { position: relative; z-index: 1; }
+.giris-logo { align-self: flex-start; padding: 12px 20px; border-radius: 14px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22); }
+.giris-marka-icerik h1 { font-size: clamp(26px, 3vw, 38px); line-height: 1.2; margin: 0 0 14px; font-weight: 800; }
+.giris-marka-icerik p { margin: 0 0 22px; color: rgba(255, 255, 255, 0.88); font-size: 16px; }
+.giris-ozellikler { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.giris-ozellikler li { display: flex; gap: 10px; align-items: center; font-size: 14.5px; }
+.giris-ozellikler li::before {
+  content: '✓'; width: 22px; height: 22px; border-radius: 50%; background: var(--altin); color: var(--marka-derin);
+  display: grid; place-items: center; font-weight: 800; font-size: 13px; flex: none;
+}
+.misir-deseni { fill: var(--altin); }
+.giris-desen { position: absolute !important; right: -34px; bottom: -24px; width: 300px; opacity: 0.17; z-index: 0 !important; }
+.giris-alt-yazi { font-size: 12px; color: rgba(255, 255, 255, 0.72); }
+.giris-form-panel { display: grid; place-items: center; padding: 32px; background: var(--page); }
+.giris-form-panel .giris-kart {
+  width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 32px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.07);
+}
+.giris-baslik-satiri { display: flex; align-items: center; gap: 12px; }
+.giris-baslik-satiri h2 { margin: 0; font-size: 24px; }
+.altin-cizgi { width: 5px; height: 28px; border-radius: 3px; background: var(--altin); }
+.giris-aciklama { color: var(--ink-2); margin: 8px 0 20px; }
+.genis-btn { width: 100%; padding: 11px; }
+.giris-yardim { margin-top: 16px; text-align: center; }
+.mesaj-logo { margin-bottom: 14px; }
+@media (max-width: 860px) {
+  .giris-sayfa { grid-template-columns: 1fr; }
+  .giris-marka-panel { padding: 20px 24px; gap: 14px; }
+  .giris-ozellikler, .giris-marka-icerik p, .giris-alt-yazi { display: none; }
+  .giris-marka-icerik h1 { font-size: 21px; margin: 0; }
+  .giris-logo { padding: 8px 14px; }
+  .giris-desen { width: 150px; right: -20px; bottom: -14px; }
+  .giris-form-panel { padding: 20px 16px 32px; align-items: start; }
+  .giris-form-panel .giris-kart { padding: 24px; }
+}
+@media print {
+  .rapor-baslik, .grup-baslik { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* Logo üst çubukta zaten var; rapor bandındaki logo yalnızca yazdırmada görünür */
+.rapor-baslik .logo-plaka { display: none; }
+@media print { .rapor-baslik .logo-plaka { display: inline-flex; } .topbar { display: none !important; } }
+table.veri th.sayi { text-align: right; }

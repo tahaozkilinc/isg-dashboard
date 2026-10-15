@@ -9,6 +9,7 @@ import {
 import type { Durum, Veri } from '../gostergeler';
 import { AylikSutun, AylikCizgi, YilSutunlari } from '../components/grafikler';
 import { aylikSatirlar } from '../components/grafikVeri';
+import { Logo } from '../components/Logo';
 
 interface Baglam { veri: Veri; yil: number; oncekiYil: number; son: number }
 
@@ -205,9 +206,7 @@ export function Dashboard() {
     <div className="rapor">
       <header className="rapor-baslik">
         <div className="rapor-firma">
-          <div className="logo logo-buyuk" aria-hidden>
-            {ayarlar.firmaAdi.split(/\s+/).map((k) => k[0]).join('').slice(0, 2).toLocaleUpperCase('tr')}
-          </div>
+          <span className="logo-plaka buyuk"><Logo yukseklik={34} /></span>
           <div>
             <div className="rapor-firma-ad">{ayarlar.firmaAdi}</div>
             <div className="alt">Temel iş güvenliği istatistikleri</div>
@@ -252,10 +251,10 @@ export function Dashboard() {
 
       {/* 2) Ana göstergeler */}
       <div className="sayac-izgara">
-        <GostergeKarti kod="kaza_toplam" baslik="İş kazası" b={b} vurgu={renk(6)} />
+        <GostergeKarti kod="kaza_toplam" baslik="İş kazası" b={b} vurgu={renk(4)} />
         <GostergeKarti kod="kayip_gun" baslik="Kayıp iş günü" b={b} vurgu={renk(8)} />
-        <GostergeKarti kod="ramak_kala" baslik="Ramak kala / risk bildirimi" b={b} vurgu={renk(1)} />
-        <GostergeKarti kod="iyilestirme_faaliyet" baslik="İyileştirme faaliyeti" b={b} vurgu={renk(2)} />
+        <GostergeKarti kod="ramak_kala" baslik="Ramak kala / risk bildirimi" b={b} vurgu={renk(3)} />
+        <GostergeKarti kod="iyilestirme_faaliyet" baslik="İyileştirme faaliyeti" b={b} vurgu={renk(1)} />
         <GostergeKarti kod="ic_denetim_puani" baslik="İç denetim puanı" b={b} vurgu={renk(5)} />
         <GostergeKarti kod="gerceklesme_puani" baslik="Gerçekleşme puanı" b={b} vurgu={renk(5)} />
       </div>
@@ -265,7 +264,7 @@ export function Dashboard() {
         <Bolum baslik="İş kazaları — aylık" aciklama="Her ay kaç iş kazası oldu? Sütunlar mavi ve beyaz yaka çalışanları ayırır.">
           <AylikSutun
             yigin yukseklik={220} veri={aylikSatirlar({ kaza_mavi: ay('kaza_mavi'), kaza_beyaz: ay('kaza_beyaz') })}
-            seriler={[{ anahtar: 'kaza_mavi', ad: 'Mavi yaka', renk: renk(1) }, { anahtar: 'kaza_beyaz', ad: 'Beyaz yaka', renk: renk(2) }]}
+            seriler={[{ anahtar: 'kaza_mavi', ad: 'Mavi yaka', renk: renk(3) }, { anahtar: 'kaza_beyaz', ad: 'Beyaz yaka', renk: renk(2) }]}
             birim="kaza"
           />
         </Bolum>
@@ -282,7 +281,7 @@ export function Dashboard() {
 
       <div className="rapor-izgara">
         <Bolum baslik="Yıllara göre iş kazası" aciklama="Yıl yıl kaç iş kazası oldu? Renkli sütun bu yıl.">
-          <YilSutunlari veri={yilNoktalari('kaza_toplam')} renk={renk(6)} birim="kaza" />
+          <YilSutunlari veri={yilNoktalari('kaza_toplam')} renk={renk(4)} birim="kaza" />
           {yilNotu && <p className="bilgi-notu">{yilNotu}</p>}
         </Bolum>
         <Bolum baslik="Yıllara göre kayıp iş günü" aciklama="Yıl yıl kaç iş günü kaybedildi?">
@@ -290,7 +289,7 @@ export function Dashboard() {
           {yilNotu && <p className="bilgi-notu">{yilNotu}</p>}
         </Bolum>
         <Bolum baslik="Yıllara göre kazasız gün" aciklama="Kazasız geçen toplam gün sayısı.">
-          <YilSutunlari veri={yilNoktalari('yasanmayan_gun')} renk={renk(4)} birim="gün" />
+          <YilSutunlari veri={yilNoktalari('yasanmayan_gun')} renk={renk(1)} birim="gün" />
           {yilNotu && <p className="bilgi-notu">{yilNotu}</p>}
         </Bolum>
       </div>
@@ -302,14 +301,14 @@ export function Dashboard() {
             yukseklik={230}
             veri={aylikSatirlar({ ramak_kala: ay('ramak_kala'), iyilestirme_gozlem: ay('iyilestirme_gozlem'), iyilestirme_faaliyet: ay('iyilestirme_faaliyet') })}
             seriler={[
-              { anahtar: 'ramak_kala', ad: 'Ramak kala / risk bildirimi', renk: renk(1) },
-              { anahtar: 'iyilestirme_gozlem', ad: 'İyileştirme gözlemi', renk: renk(2) },
-              { anahtar: 'iyilestirme_faaliyet', ad: 'İyileştirme faaliyeti', renk: renk(3) },
+              { anahtar: 'ramak_kala', ad: 'Ramak kala / risk bildirimi', renk: renk(3) },
+              { anahtar: 'iyilestirme_gozlem', ad: 'İyileştirme gözlemi', renk: renk(1) },
+              { anahtar: 'iyilestirme_faaliyet', ad: 'İyileştirme faaliyeti', renk: renk(2) },
             ]}
           />
         </Bolum>
         <Bolum baslik="Günlük işbaşı iyileştirme" aciklama="Çalışanların işbaşında yaptığı günlük iyileştirmeler.">
-          <AylikSutun yukseklik={230} veri={aylikSatirlar({ g: ay('gunluk_isbasi_iyilestirme') })} seriler={[{ anahtar: 'g', ad: 'İyileştirme', renk: renk(2) }]} birim="adet" />
+          <AylikSutun yukseklik={230} veri={aylikSatirlar({ g: ay('gunluk_isbasi_iyilestirme') })} seriler={[{ anahtar: 'g', ad: 'İyileştirme', renk: renk(1) }]} birim="adet" />
         </Bolum>
       </div>
 
@@ -334,26 +333,26 @@ export function Dashboard() {
       {/* 6) Eğitim */}
       <div className="rapor-izgara">
         <Bolum baslik="İşe giriş eğitimi (saat)" aciklama="Yeni başlayanlara verilen eğitim süresi.">
-          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('ilk_ise_giris_egitim_saati') })} seriler={[{ anahtar: 'x', ad: 'Saat', renk: renk(2) }]} birim="saat" />
+          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('ilk_ise_giris_egitim_saati') })} seriler={[{ anahtar: 'x', ad: 'Saat', renk: renk(1) }]} birim="saat" />
         </Bolum>
         <Bolum baslik="Diğer eğitimler — katılımcı" aciklama="Eğitimlere katılan kişi sayısı.">
-          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('diger_egitim_katilimci') })} seriler={[{ anahtar: 'x', ad: 'Katılımcı', renk: renk(2) }]} birim="kişi" />
+          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('diger_egitim_katilimci') })} seriler={[{ anahtar: 'x', ad: 'Katılımcı', renk: renk(1) }]} birim="kişi" />
         </Bolum>
         <Bolum baslik="Diğer eğitimler — adam·saat" aciklama="Katılımcı sayısı × eğitim süresi.">
-          <AylikSutun yukseklik={190} ondalik={1} veri={aylikSatirlar({ x: ay('diger_egitim_adam_saat') })} seriler={[{ anahtar: 'x', ad: 'Adam·saat', renk: renk(2) }]} birim="saat" />
+          <AylikSutun yukseklik={190} ondalik={1} veri={aylikSatirlar({ x: ay('diger_egitim_adam_saat') })} seriler={[{ anahtar: 'x', ad: 'Adam·saat', renk: renk(1) }]} birim="saat" />
         </Bolum>
       </div>
 
       {/* 7) Çalışma hayatı */}
       <div className="rapor-izgara">
         <Bolum baslik="İş izni sayısı" aciklama="Verilen iş izni (tehlikeli işler) adedi.">
-          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('is_izni') })} seriler={[{ anahtar: 'x', ad: 'İş izni', renk: renk(1) }]} birim="adet" />
+          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('is_izni') })} seriler={[{ anahtar: 'x', ad: 'İş izni', renk: renk(3) }]} birim="adet" />
         </Bolum>
         <Bolum baslik="İşe giriş sayısı" aciklama="Her ay işe başlayan kişi sayısı.">
-          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('ise_giris') })} seriler={[{ anahtar: 'x', ad: 'İşe giriş', renk: renk(1) }]} birim="kişi" />
+          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('ise_giris') })} seriler={[{ anahtar: 'x', ad: 'İşe giriş', renk: renk(3) }]} birim="kişi" />
         </Bolum>
         <Bolum baslik="Sağlık raporu gün sayısı" aciklama="Sağlık nedeniyle alınan rapor günleri.">
-          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('saglik_rapor_gun') })} seriler={[{ anahtar: 'x', ad: 'Rapor günü', renk: renk(1) }]} birim="gün" />
+          <AylikSutun yukseklik={190} veri={aylikSatirlar({ x: ay('saglik_rapor_gun') })} seriler={[{ anahtar: 'x', ad: 'Rapor günü', renk: renk(3) }]} birim="gün" />
         </Bolum>
       </div>
 

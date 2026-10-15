@@ -3,10 +3,11 @@
 -- girdiğiniz verilerin üzerine yazmaz.
 --
 -- Roller:
---   admin    → yalnızca TANIMLAMA yapar (kullanıcı ve firma tanımları); kayıt girmez
---   uzman    → aylık verileri girer ve düzeltir
---   izleyici → yalnızca dashboard'u görür
---   pasif    → erişimi kapalı
+--   admin        → yalnızca TANIMLAMA yapar (kullanıcı ve firma tanımları); kayıt girmez
+--   uzman        → aylık verileri girer ve düzeltir
+--   admin_uzman  → hem tanımlama yapar hem veri girer (tek kişilik kurulum için)
+--   izleyici     → yalnızca dashboard'u görür
+--   pasif        → erişimi kapalı
 -- Kullanıcı hesapları Supabase panelinde (Authentication → Users) açılır, rolleri uygulamadaki
 -- Tanımlar sayfasından verilir. Kendi kendine kayıt YOKTUR.
 
@@ -21,9 +22,13 @@ drop function if exists public.isg_profil_olustur(text);
 create table if not exists public.isg_kullanicilar (
   eposta text primary key check (eposta = lower(eposta)),
   ad_soyad text not null default '',
-  rol text not null check (rol in ('admin', 'uzman', 'izleyici', 'pasif')),
+  rol text not null check (rol in ('admin', 'uzman', 'izleyici', 'pasif', 'admin_uzman')),
   olusturma timestamptz not null default now()
 );
+-- Eski kurulumda tablo zaten varsa yeni rolü kabul etsin
+alter table public.isg_kullanicilar drop constraint if exists isg_kullanicilar_rol_check;
+alter table public.isg_kullanicilar
+  add constraint isg_kullanicilar_rol_check check (rol in ('admin', 'uzman', 'izleyici', 'pasif', 'admin_uzman'));
 
 create table if not exists public.isg_ayarlar (
   id smallint primary key default 1 check (id = 1),
@@ -60,7 +65,8 @@ as $$
   where eposta = lower((select auth.jwt() ->> 'email'))
 $$;
 
--- Giriş yapan kişinin rolünü döndürür. Sistemde hiç yönetici yoksa ilk giriş yapan yönetici olur.
+-- Giriş yapan kişinin rolünü döndürür. Sistemde hiç yönetici yoksa ilk giriş yapan kişi
+-- 'admin_uzman' (yönetici + İSG uzmanı) olur; ileride Tanımlar sayfasından değiştirilebilir.
 create or replace function public.isg_rolum()
 returns table (o_eposta text, o_ad_soyad text, o_rol text)
 language plpgsql
@@ -76,10 +82,10 @@ begin
 
   perform pg_advisory_xact_lock(hashtext('isg_rolum'));
 
-  if not exists (select 1 from public.isg_kullanicilar a where a.rol = 'admin') then
+  if not exists (select 1 from public.isg_kullanicilar a where a.rol in ('admin', 'admin_uzman')) then
     insert into public.isg_kullanicilar (eposta, ad_soyad, rol)
-    values (v_eposta, '', 'admin')
-    on conflict on constraint isg_kullanicilar_pkey do update set rol = 'admin';
+    values (v_eposta, '', 'admin_uzman')
+    on conflict on constraint isg_kullanicilar_pkey do update set rol = 'admin_uzman';
   end if;
 
   return query
@@ -95,9 +101,9 @@ security definer
 set search_path = ''
 as $$
 begin
-  if old.rol = 'admin'
-     and (tg_op = 'DELETE' or new.rol <> 'admin')
-     and not exists (select 1 from public.isg_kullanicilar where rol = 'admin' and eposta <> old.eposta) then
+  if old.rol in ('admin', 'admin_uzman')
+     and (tg_op = 'DELETE' or new.rol not in ('admin', 'admin_uzman'))
+     and not exists (select 1 from public.isg_kullanicilar where rol in ('admin', 'admin_uzman') and eposta <> old.eposta) then
     raise exception 'Sistemdeki son yönetici kaldırılamaz';
   end if;
   return case when tg_op = 'DELETE' then old else new end;
@@ -124,36 +130,36 @@ revoke all on public.isg_kullanicilar, public.isg_ayarlar, public.isg_aylik_veri
 -- Kullanıcı tanımları: yalnızca yönetici görür ve değiştirir.
 drop policy if exists isg_kullanici_hepsi on public.isg_kullanicilar;
 create policy isg_kullanici_hepsi on public.isg_kullanicilar for all to authenticated
-  using ((select public.isg_rol()) = 'admin')
-  with check ((select public.isg_rol()) = 'admin');
+  using ((select public.isg_rol()) in ('admin', 'admin_uzman'))
+  with check ((select public.isg_rol()) in ('admin', 'admin_uzman'));
 
 -- Firma ayarı: onaylı herkes okur, yalnızca yönetici değiştirir.
 drop policy if exists isg_ayar_oku on public.isg_ayarlar;
 create policy isg_ayar_oku on public.isg_ayarlar for select to authenticated
-  using ((select public.isg_rol()) in ('admin', 'uzman', 'izleyici'));
+  using ((select public.isg_rol()) in ('admin', 'uzman', 'izleyici', 'admin_uzman'));
 
 drop policy if exists isg_ayar_guncelle on public.isg_ayarlar;
 create policy isg_ayar_guncelle on public.isg_ayarlar for update to authenticated
-  using ((select public.isg_rol()) = 'admin')
-  with check ((select public.isg_rol()) = 'admin');
+  using ((select public.isg_rol()) in ('admin', 'admin_uzman'))
+  with check ((select public.isg_rol()) in ('admin', 'admin_uzman'));
 
--- Aylık veri: yönetici, uzman ve izleyici okur; yalnızca uzman girer/düzeltir/siler.
+-- Aylık veri: herkes okur; yalnızca uzman (ve yönetici+uzman) girer/düzeltir/siler.
 drop policy if exists isg_veri_oku on public.isg_aylik_veri;
 create policy isg_veri_oku on public.isg_aylik_veri for select to authenticated
-  using ((select public.isg_rol()) in ('admin', 'uzman', 'izleyici'));
+  using ((select public.isg_rol()) in ('admin', 'uzman', 'izleyici', 'admin_uzman'));
 
 drop policy if exists isg_veri_ekle on public.isg_aylik_veri;
 create policy isg_veri_ekle on public.isg_aylik_veri for insert to authenticated
-  with check ((select public.isg_rol()) = 'uzman');
+  with check ((select public.isg_rol()) in ('uzman', 'admin_uzman'));
 
 drop policy if exists isg_veri_guncelle on public.isg_aylik_veri;
 create policy isg_veri_guncelle on public.isg_aylik_veri for update to authenticated
-  using ((select public.isg_rol()) = 'uzman')
-  with check ((select public.isg_rol()) = 'uzman');
+  using ((select public.isg_rol()) in ('uzman', 'admin_uzman'))
+  with check ((select public.isg_rol()) in ('uzman', 'admin_uzman'));
 
 drop policy if exists isg_veri_sil on public.isg_aylik_veri;
 create policy isg_veri_sil on public.isg_aylik_veri for delete to authenticated
-  using ((select public.isg_rol()) = 'uzman');
+  using ((select public.isg_rol()) in ('uzman', 'admin_uzman'));
 
 -- ---------- Sunar Mısır verileri (Excel: "2026 İSG KPI Sunar") ----------
 -- 2026: Ocak–Mayıs aylık değerler · 2025 ve 2024: yıllık toplamlar (ay = 0)

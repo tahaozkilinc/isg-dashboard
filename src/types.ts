@@ -1,8 +1,9 @@
-export type Rol = 'admin' | 'uzman' | 'izleyici' | 'pasif';
+export type Rol = 'admin' | 'uzman' | 'admin_uzman' | 'izleyici' | 'pasif';
 
 export const ROLLER: { rol: Rol; ad: string; aciklama: string }[] = [
   { rol: 'admin', ad: 'Yönetici', aciklama: 'Yalnızca tanımlama yapar: kullanıcıları ve firma bilgisini yönetir. Veri girmez.' },
-  { rol: 'uzman', ad: 'İSG Uzmanı', aciklama: 'Aylık göstergeleri girer ve düzeltir.' },
+  { rol: 'admin_uzman', ad: 'Yönetici + İSG Uzmanı', aciklama: 'Hem tanımlama yapar hem kaza ve aylık verileri girer (tek kişilik kurulum için).' },
+  { rol: 'uzman', ad: 'İSG Uzmanı', aciklama: 'Yeni kaza ve aylık göstergeleri girer ve düzeltir.' },
   { rol: 'izleyici', ad: 'İzleyici', aciklama: 'Yalnızca dashboard\'u görüntüler.' },
   { rol: 'pasif', ad: 'Pasif', aciklama: 'Erişimi kapatılmış.' },
 ];
