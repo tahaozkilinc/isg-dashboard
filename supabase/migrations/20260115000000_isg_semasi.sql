@@ -337,3 +337,9 @@ insert into public.isg_aylik_veri (yil, ay, kod, deger) values
   (2026, 5, 'son_kazadan_gecen_gun', 53),
   (2026, 5, 'yasanmayan_gun', 31)
 on conflict (yil, ay, kod) do nothing;
+
+-- Supabase API'sinin yeni tabloları ve fonksiyonları hemen görmesi için önbelleği yenile
+notify pgrst, 'reload schema';
+
+-- Kurulum kontrolü: aşağıdaki sorgu 178 döndürmelidir
+-- select count(*) from public.isg_aylik_veri;

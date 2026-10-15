@@ -29,13 +29,16 @@ class HataSiniri extends Component<{ children: ReactNode }, { hata: boolean }> {
   }
 }
 
-function Mesaj({ baslik, metin, cikis }: { baslik: string; metin: string; cikis?: boolean }) {
+function Mesaj({ baslik, metin, cikis, yenile }: { baslik: string; metin: string; cikis?: boolean; yenile?: boolean }) {
   return (
     <div className="tam-sayfa">
       <div className="kart giris-kart">
         <h3>{baslik}</h3>
         <p style={{ color: 'var(--ink-2)' }}>{metin}</p>
-        {cikis && <button className="btn ikincil" onClick={() => void cikisYap()}>Çıkış Yap</button>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {yenile && <button className="btn" onClick={() => location.reload()}>Tekrar Dene</button>}
+          {cikis && <button className="btn ikincil" onClick={() => void cikisYap()}>Çıkış Yap</button>}
+        </div>
       </div>
     </div>
   );
@@ -58,7 +61,7 @@ function Uygulama() {
   }
   if (!d.hazir) return <Mesaj baslik="Yükleniyor…" metin="Oturum kontrol ediliyor." />;
   if (!d.oturum) return <Giris />;
-  if (d.hata && !d.rol) return <Mesaj baslik="Bağlantı hatası" metin={d.hata} cikis />;
+  if (d.hata && !d.rol) return <Mesaj baslik="Bağlantı hatası" metin={d.hata} cikis yenile />;
   if (d.rol === 'tanimsiz') {
     return <Mesaj baslik="Hesabınız tanımlı değil" metin={`${d.oturum.eposta} adresi sistemde tanımlı değil. Erişim için sistem yöneticinizden sizi Tanımlar sayfasından eklemesini isteyin.`} cikis />;
   }

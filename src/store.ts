@@ -64,6 +64,9 @@ export function hataMetni(e: unknown): string {
   if (h.code === '42501' || /row-level security|permission denied/i.test(mesaj)) {
     return 'Bu işlem için yetkiniz yok.';
   }
+  if (/Could not find the (function|table)|schema cache|does not exist/i.test(mesaj)) {
+    return 'Veritabanı henüz kurulmamış. Yönetici, supabase/migrations/20260115000000_isg_semasi.sql dosyasını Supabase SQL Editor\'de çalıştırmalı.';
+  }
   if (/Invalid login credentials/i.test(mesaj)) return 'E-posta veya şifre hatalı.';
   if (/Email not confirmed/i.test(mesaj)) return 'E-posta adresiniz henüz doğrulanmamış. Yöneticiyle görüşün.';
   if (/rate limit|too many/i.test(mesaj)) return 'Çok fazla deneme yapıldı. Biraz bekleyip tekrar deneyin.';
